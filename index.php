@@ -5,7 +5,7 @@ require_once("Server/User.php");
 require_once("Server/Configuration/Config.php");
 
 Configuration::LoadFile("Config.ini");
-Database::Connect(Configuration::GetEntry("DATABASE_HOST"), Configuration::GetEntry("DATABASE_USERNAME"), "", Configuration::GetEntry("DATABASE_NAME"));
+Database::Connect(Configuration::GetEntry("DATABASE_HOST"), Configuration::GetEntry("DATABASE_USERNAME"), "carbon12", Configuration::GetEntry("DATABASE_NAME"));
 Session::BuildSession();
 ?>
 
@@ -19,18 +19,19 @@ Session::BuildSession();
 </head>
 
 <body>
-    <div class="chat-box middle-of-screen">
-        <?php 
-        if (UserBuilder::IsUserLoggedIn()) 
-        { 
-            require("Views/Messenger.php"); 
-        }
-        else 
-        {
-            require("Views/Register.php");
-        }
-        ?>
-    </div>
+
+    <?php 
+    if (UserBuilder::IsUserLoggedIn()) 
+    { 
+        require("Views/Messenger.php"); 
+    }
+    else 
+    {
+        require("Views/Login.php");
+    }
+    ?>
     
+
+    <script src="js/site.js"></script>
 </body>
 </html>
