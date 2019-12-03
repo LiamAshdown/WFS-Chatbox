@@ -1,0 +1,81 @@
+/* SHARED START */
+
+.chat-box {
+    background-color: grey;
+    height: 500px;
+    width: 40%;
+    display: flex;
+    position: relative;
+}
+
+.middle-of-screen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+/* SHARED END */
+
+/* MESSENGER.PHP START */
+
+#chatter {
+    background-color: whitesmoke;
+    margin: 10px 0px 10px 10px;
+    height: 85%;
+    width: 75%;
+}
+
+#users {
+    background-color: whitesmoke;
+    margin: 10px;
+    height: 85%;
+    width: 30%;
+}
+
+#message {
+    margin: 10px 10px 10px 10px;
+    width: 97.5%;
+    height: 9%;
+    position: absolute;
+    bottom: 0;
+    display: flex;
+}
+
+#message input[type="text"] {
+    width: 80%;
+    height: 100%;
+    margin: 1px 10px 3px 1px;
+    padding-left: 10px;
+    border: 0;
+    background-color: whitesmoke;
+    color: black;
+}
+
+#message button {
+    background-color: #4CAF50;
+    color: white;
+    margin: 1px;
+    border: none;
+    cursor: pointer;
+    width: 20%;
+    height: 100%;
+}
+
+#message button:hover {
+    opacity: 0.9;
+}
+
+/* MESSENGER.PHP END */
+
+/* REGISTER START */
+
+#title-header {
+    background-color: whitesmoke;
+    width: 100%;
+    height: 20%;
+    text-align: center;
+}
+
+/* REGISTER END */
