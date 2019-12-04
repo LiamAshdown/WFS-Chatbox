@@ -1,9 +1,6 @@
 <?php
 
 require_once("User.php");
-require_once("Response/Response.php");
-require_once("Database/Database.php");
-require_once("Configuration/Config.php");
 require_once("Utility/StringHelper.php");
 
 /// Check if first variable is a register or login

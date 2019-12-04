@@ -63,6 +63,18 @@ class ResponseBuilder
         self::Response(200, true, true, "", $p_Data, false);
     }
 
+    /// Send Response
+    static public function MessageSent()
+    {
+        self::Response(200, true, false, "", array(), false);
+    }
+
+    /// Send Response
+    static public function InvalidSession()
+    {
+        self::Response(200, false, false, "INVALID_SESSION", array(), false);
+    }
+
     /// Create and send response
     /// @p_HTTPStatusCode : HTTP Status Code
     /// @p_Success 		  : Response is successful or not

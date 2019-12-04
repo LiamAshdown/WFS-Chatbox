@@ -1,3 +1,4 @@
+
 <div class="chat-box middle-of-screen">
     <!-- Message Box -->
     <div id="chatter">
@@ -14,8 +15,8 @@
     </div>
 
     <!-- Input Box -->
-    <form>
-        <input type="text" name="message-textbox" placeholder="Enter message...">
+    <form id="messenger-form" method="post">
+        <input type="text" id="send-message" name="SendMessage" placeholder="Enter message..." autofocus>
         <input type="submit" value="Send">
     </form>
 </div>

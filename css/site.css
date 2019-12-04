@@ -45,20 +45,6 @@
     opacity: 0.9;
 }
 
-#chatter {
-    background-color: whitesmoke;
-    margin: 10px 0px 10px 10px;
-    height: 85%;
-    width: 75%;
-}
-
-#users {
-    background-color: whitesmoke;
-    margin: 10px;
-    height: 85%;
-    width: 30%;
-}
-
 .chat-box form {
     margin: 10px 10px 10px 10px;
     width: 97.5%;
@@ -68,6 +54,44 @@
     left: 0;
     display: flex;
 }
+
+#chatter {
+    background-color: whitesmoke;
+    margin: 10px 0px 10px 10px;
+    height: 85%;
+    width: 75%;
+    overflow-x:auto;
+    overflow-y:auto;
+}
+
+#chatter ul, li {
+    margin: 2px;
+    padding: 0;
+}
+
+#chatter ul li {
+    list-style-position: none;
+}
+
+#users {
+    background-color: whitesmoke;
+    margin: 10px;
+    height: 85%;
+    width: 30%;
+
+    overflow-x:hidden;
+    overflow-y:auto;
+}
+
+#users ul, li {
+    margin: 3px;
+    padding: 0;
+}
+
+#users ul li {
+    list-style-position: none;
+}
+
 
 /* MESSENGER.PHP END */
 

@@ -1,7 +1,5 @@
 <?php
-require_once("Server/Database/Database.php");
 require_once("Server/User.php");
-require_once("Server/Configuration/Config.php");
 ?>
 
 <!DOCTYPE html>
@@ -23,6 +21,7 @@ require_once("Server/Configuration/Config.php");
     if (UserBuilder::IsUserLoggedIn()) 
     { 
         require("Views/Messenger.php"); 
+
         UserBuilder::JoinChat();
     }
     else 

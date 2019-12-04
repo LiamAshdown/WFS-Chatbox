@@ -1,6 +1,7 @@
 ///////////////////////////////////////////
 //          GLOBAL VARIABLES
 ///////////////////////////////////////////
+var l_MessageCount = 0; ///< This is used to determine whether messages has been updated
 
 ///////////////////////////////////////////
 //              LOGIN.PHP
@@ -238,6 +239,12 @@ function GetUsers()
         data:  "GetUserList",
         success: function(l_Json) {
 
+            /// Reload webpage if our session is invalid (checks are done on server-side on User and message interval function)
+            if (l_Json.message === "INVALID_SESSION")
+            {
+                location.reload();
+            }
+
             if (!l_Json.data.length)
             {
                 return;
@@ -251,7 +258,7 @@ function GetUsers()
                 var l_Id       = l_Json.data[l_I].id;
                 var l_Username = l_Json.data[l_I].username;
 
-                var l_Row = document.createElement("li");
+                var l_Row         = document.createElement("li");
                 l_Row.textContent = l_Username + " (Id: " + l_Id + ")";
 
                 l_List.appendChild(l_Row);
@@ -272,9 +279,26 @@ function GetMessages()
         data:  "GetMessages",
         success: function(l_Json) {
 
+            /// Reload webpage if our session is invalid (checks are done on server-side on User and message interval function)
+            if (l_Json.message === "INVALID_SESSION")
+            {
+                location.reload();
+            }
+
+            /// Don't update message if there's no data
             if (!l_Json.data.length)
             {
                 return;
+            }
+
+            /// If the message count is the same, don't update the message
+            if (l_MessageCount == l_Json.data.length)
+            {
+                return;
+            }
+            else
+            {
+                l_MessageCount = l_Json.data.length;
             }
 
             var l_List = document.getElementById("chatter").getElementsByTagName("ul")[0];
@@ -289,7 +313,25 @@ function GetMessages()
                 var l_Row = document.createElement("li");
                 l_Row.textContent = "[" + l_Username + "]: " + l_Message;
 
+                /// Every second row change colour - for easy readability
+                if (l_I % 2)
+                {
+
+                    l_Row.style.background="#DCDCDC";
+                }
+
                 l_List.appendChild(l_Row);
+            }
+
+            /// Automatically scroll down when recieve new message
+            var l_ScrollTop = document.getElementById("chatter").scrollTop;
+            var l_ScrollHeight = document.getElementById("chatter").scrollHeight;
+            var l_Total = Math.abs(l_ScrollTop - l_ScrollHeight);
+
+            /// Thresh-hold incase the user wants to see previous messages
+            if (l_Total <= 475)
+            {
+                document.getElementById("chatter").scrollTop = l_ScrollHeight;
             }
         },
         error: function(data) {
@@ -297,6 +339,39 @@ function GetMessages()
         }
     });
 }
+
+/// Listener for messenger form
+$("#messenger-form").submit(function(p_Event) {
+
+    p_Event.preventDefault();
+
+    /// Get our inputs
+    var $l_Inputs = $(this).find("input");
+
+    /// Serialize our inputs
+    var l_SerializeData = $(this).serialize();
+
+    var l_Request = $.ajax({
+        url: "Server/Messenger.php",
+        type: "post",
+        dataType: 'json',
+        data:  l_SerializeData,
+        success: function(l_Json) {
+            document.getElementById("send-message").value = "";
+            /// Set Input field focused again
+            document.getElementById("send-message").focus();
+            document.getElementById("send-message").scrollIntoView();
+            /// Automatically scroll down when user sends message
+            document.getElementById("chatter").scrollTop = document.getElementById("chatter").scrollHeight;
+
+            /// Get new message for instant feed back
+            GetMessages();
+        },
+        error: function(data) {
+            /// TODO; Log something here?
+        }
+    });
+});
 
 ///////////////////////////////////////////
 //              INTERVALS

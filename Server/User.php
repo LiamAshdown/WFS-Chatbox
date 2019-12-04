@@ -3,8 +3,9 @@
 require_once("Session.php");
 require_once("Database/Database.php");
 require_once("Configuration/Config.php");
+require_once("Response/Response.php");
 Configuration::LoadFile($_SERVER['DOCUMENT_ROOT']."\Chatbox\Config.ini");
-Database::Connect(Configuration::GetEntry("DATABASE_HOST"), Configuration::GetEntry("DATABASE_USERNAME"), "", Configuration::GetEntry("DATABASE_NAME"));
+Database::Connect(Configuration::GetEntry("DATABASE_HOST"), Configuration::GetEntry("DATABASE_USERNAME"), "carbon12", Configuration::GetEntry("DATABASE_NAME"));
 Session::BuildSession();
 
 class UserBuilder
@@ -78,14 +79,34 @@ class UserBuilder
         return false;
     }
 
+    /// Logout user
+    static public function Logout()
+    {
+        self::SendSystemMessage(Session::GetValue("user")->GetUsername()." has left the chat");
+
+        Database::DirectQuery("DELETE FROM user_list WHERE id =".Session::GetValue("user")->GetId());
+
+        Session::UnSetValue("logged_in");
+        Session::UnSetValue("user");
+    }
+
     /// Join the chat
     static public function JoinChat()
     {
-        $l_PreparedStatement = Database::PrepareStatement("INSERT INTO user_list (id, username) VALUES (?, ?) ON DUPLICATE KEY UPDATE id = ?");
-        $l_PreparedStatement->BindParameter("s", Session::GetValue("user")->GetId());
+        $l_PreparedStatement = Database::PrepareStatement("SELECT username FROM user_list WHERE username = ?");
         $l_PreparedStatement->BindParameter("s", Session::GetValue("user")->GetUsername());
-        $l_PreparedStatement->BindParameter("s", Session::GetValue("user")->GetId());
         $l_PreparedStatement->Execute();
+
+        if ($l_PreparedStatement->GetResult() === null)
+        {
+            $l_PreparedStatement = Database::PrepareStatement("INSERT INTO user_list (id, username) VALUES (?, ?) ON DUPLICATE KEY UPDATE id = VALUES(id)");
+            $l_PreparedStatement->BindParameter("s", Session::GetValue("user")->GetId());
+            $l_PreparedStatement->BindParameter("s", Session::GetValue("user")->GetUsername());
+            $l_PreparedStatement->Execute();
+
+            self::SendSystemMessage(Session::GetValue("user")->GetUsername()." has joined the chat");
+        }
+    
     }
 
     /// Get users in chat
@@ -144,6 +165,70 @@ class UserBuilder
         }
 
         return array();
+    }
+
+    /// Send message to database
+    /// @p_Message : Message being inserted to database
+    static public function SendMessage(string $p_Message) : void 
+    {
+        if (self::ParseCommand($p_Message))
+        {
+            return;
+        }
+
+        $l_PreparedStatement = Database::PrepareStatement("INSERT INTO messages(id, username, message, date_sent) VALUES(?, ?, ?, NOW())");
+        $l_PreparedStatement->BindParameter("s", Session::GetValue("user")->GetId());
+        $l_PreparedStatement->BindParameter("s", Session::GetValue("user")->GetUsername());
+        $l_PreparedStatement->BindParameter("s", $p_Message);
+        $l_PreparedStatement->Execute();
+    }
+
+    /// Send system message to database
+    /// @p_Message : Message being inserted to database
+    static public function SendSystemMessage(string $p_Message) : void 
+    {
+        $l_PreparedStatement = Database::PrepareStatement("INSERT INTO messages(id, username, message, date_sent) VALUES(?, ?, ?, NOW())");
+        $l_PreparedStatement->BindParameter("s", 0);
+        $l_PreparedStatement->BindParameter("s", "SYSTEM");
+        $l_PreparedStatement->BindParameter("s", $p_Message);
+        $l_PreparedStatement->Execute();
+    }
+
+    /// Validate if current session matches the session in database
+    static public function ValidateSession() : bool
+    {
+        $l_PreparedStatement = Database::PrepareStatement("SELECT session_id FROM users WHERE username = ?");
+        $l_PreparedStatement->BindParameter("s", Session::GetValue("user")->GetUsername());
+        $l_PreparedStatement->Execute();
+
+        if ($l_Result = $l_PreparedStatement->GetResult())
+        {
+            $l_Row = $l_Result->GetRow();
+
+            /// If session does not match - log off user
+            if (Session::GetSessionId() != $l_Row[0])
+            {
+                self::Logout();
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// Check whether the message has a command if so execute it
+    static public function ParseCommand(string $p_Message) : bool
+    {
+        if ($p_Message === "/logout")
+        {
+            self::Logout();
+            ResponseBuilder::InvalidSession();
+
+            return true;
+        }
+
+        return false;
     }
 }
 
