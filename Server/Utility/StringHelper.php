@@ -7,7 +7,7 @@ class StringHelper
     /// @p_ErrorResponse : Error which is returned
     public static function ValidateUsername(string $p_Username, array &$p_ErrorResponse) : bool
     {
-        if (preg_match('/[\'^£$%&*()}{@#~?><>,|=_+¬-]/', $p_Username))
+        if (preg_match('/[\'^!£$%&*()}{@#~?><>,|=_+¬-]/', $p_Username))
         {
             $p_ErrorResponse["error"] = 1;
             $p_ErrorResponse["error_message"] = "Username cannot contain special characters!";
