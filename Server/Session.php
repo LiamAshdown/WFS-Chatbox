@@ -25,7 +25,7 @@ class Session
         }
 
         /// Check if value is set and is not empty (prevent malicious attacks?)
-        if (isset($_SESSION[$p_Text]) && !empty($_SESSION[$p_Value]))
+        if (isset($_SESSION[$p_Text]) && !empty($_SESSION[$p_Text]))
         {    
             return $_SESSION[$p_Text];
         }
@@ -36,7 +36,7 @@ class Session
     /// Set value for session
     /// @p_Text  : Text session
     /// @p_Value : Value session
-    public static function SetValue(string $p_Text, $p_Value)
+    public static function SetValue(string $p_Text, $p_Value) : void
     {
         /// Only time this happens is when BuildSession has not been declared before SetValue
         if (self::DoesSessionExit() == false)
@@ -45,6 +45,23 @@ class Session
         }
 
         $_SESSION[$p_Text] = $p_Value;
+    }
+
+    /// Unset value for session
+    /// @p_Text : Text Session
+    public static function UnSetValue(string $p_Text) : void
+    {
+        /// Check if value is set and is not empty (prevent malicious attacks?)
+        if (isset($_SESSION[$p_Text]))
+        {    
+            unset($_SESSION[$p_Text]);
+        }
+    }
+
+    /// Get Session Id
+    public static function GetSessionId()
+    {
+        return session_id();
     }
 
     //////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,5 @@
 <?php
-
-require("Server/Utility/TaskException.php");
+require(dirname(__DIR__)."/Utility/TaskException.php");
 require('ResultSet.php');
 
 class PreparedStatement

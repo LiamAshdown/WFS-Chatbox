@@ -28,7 +28,7 @@ class Configuration
         }
         else
         {
-            Logger::GetInstance()->Log(LogLevel::LOG_LEVEL_ASSERT, "Cannot locate file ".$p_File, __FUNCTION__, __LINE__);
+            user_error("Cannot locate config file: ".$p_File);
             return false;
         }
 

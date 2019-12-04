@@ -6,7 +6,7 @@ class Database
     /// Constructor
     public function __construct()
     {
-        $this->m_Connection = null;
+        self::$m_Connection = null;
     }
     /// Deconstructor
     public function __deconstruct()
@@ -69,9 +69,9 @@ class Database
     {
         try 
         {
-            if (!$this->m_Connection->query($p_Query))
+            if (!self::$m_Connection->query($p_Query))
             {
-                throw new TaskException("[Database/DirectQuery]: Failed to query! Error: ".$this->m_Connection->error);
+                throw new TaskException("[Database/DirectQuery]: Failed to query! Error: ".self::$m_Connection->error);
             }
         }
         catch (TaskException $p_Exception)
@@ -87,13 +87,13 @@ class Database
     {
         try
         {
-            if ($l_Result = $this->m_Connection->query($p_Query, MYSQLI_USE_RESULT))
+            if ($l_Result = self::$m_Connection->query($p_Query, MYSQLI_USE_RESULT))
             {
                 return $l_Result;
             }
             else
             {
-                throw new TaskException("[Database/DirectQueryWithResult]: Failed to query! Error: ".$this->m_Connection->error);
+                throw new TaskException("[Database/DirectQueryWithResult]: Failed to query! Error: ".self::$m_Connection->error);
             }
         }
         catch (TaskException $p_Exception)
@@ -107,7 +107,6 @@ class Database
     {
         if (self::$m_Connection)
         {
-             /// Close MySQLI connection
             self::$m_Connection->close();
         }
     }

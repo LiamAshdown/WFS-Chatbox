@@ -6,8 +6,7 @@
     position: fixed;
     top: 50%;
     left: 50%;
-    /* bring your own prefixes */
-    transform: translate(-50%, 50%);
+    transform: translate(-80%, 30%);
 }
 
 /* SHARED END */
@@ -22,7 +21,7 @@
     position: relative;
 }
 
-.chat-box input[type="text"] {
+.chat-box form input[type="text"] {
     width: 80%;
     height: 100%;
     margin: 1px 10px 3px 1px;
@@ -32,7 +31,7 @@
     color: black;
 }
 
-.chat-box button {
+.chat-box form input[type="submit"] {
     background-color: #4CAF50;
     color: white;
     margin: 1px;
@@ -42,7 +41,7 @@
     height: 100%;
 }
 
-.chat-box button:hover {
+.chat-box form input[type="submit"]:hover {
     opacity: 0.9;
 }
 
@@ -60,12 +59,13 @@
     width: 30%;
 }
 
-#message {
+.chat-box form {
     margin: 10px 10px 10px 10px;
     width: 97.5%;
-    height: 9%;
+    height: 8%;
     position: absolute;
     bottom: 0;
+    left: 0;
     display: flex;
 }
 
@@ -73,35 +73,38 @@
 
 /* LOGIN.PHP START */
 
-.login-box {
+#login-box {
     font-family: "Roboto", sans-serif;
     background-color: #343434;
-    height: 550px;
+    height: 500px;
     width: 30%;
     position: relative;
+
+    /* Java Script Call */
+    transition: height 0.3s;
+    -webkit-transition: height 0.3s;
 }
 
-.login-box form {
+#login-box form {
     margin: 0 auto;
     padding: 45px;
     text-align: center;
 }
 
-.login-box form h1 {
+#login-box form h1 {
     color: whitesmoke;
     font-size: 1.9rem;
     margin: 10px 0;
 }
 
-.login-box form label {
+#login-box form label {
     color: whitesmoke;
     font-size: 1.3rem;
     float: left;
     margin: 15px 0;
 }
 
-
-.login-box form input[type="text"],
+#login-box form input[type="text"],
                 input[type="password"] {
     background: #f2f2f2;
     width: 100%;
@@ -111,20 +114,13 @@
     padding: 15px;
     box-sizing: border-box;
     font-size: 1rem;
-
-    /* Java script call */
-    -webkit-transition: .5s ease-out;
-    -moz-transition: .5s ease-out;
-    -o-transition: .5s ease-out;
-    transition: .5s ease-out;
-    z-index: 2;
 }
 
-.login-box form input[type="text"]::after {
+#login-box form input[type="text"]::after {
     position: absolute;
 }
 
-.login-box form button {
+#login-box form input[type="submit"] {
     background-color: #4CAF50;
     color: whitesmoke;
     width: 100%;
@@ -135,17 +131,23 @@
     border: 0;
 }
 
-.login-box form button:hover {
+#login-box form input[type="submit"]:hover {
     opacity: 0.9;
 }
 
-.login-box form p {
+#login-box form p {
     color: whitesmoke;
 }
 
-.login-box a {
+#login-box a {
     color: #4CAF50;
     text-decoration: none;
+}
+
+.requirement {
+    position: relative;
+    margin: 5px;
+    color: red;
 }
 
 #register-form {
