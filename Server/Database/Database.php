@@ -26,7 +26,7 @@ class Database
     /// @p_Username  : Username
     /// @p_Password  : Password
     /// @p_Database  : Database
-    public static function Connect(string $p_LocalHost, string $p_Username, string $p_Password, string $p_Database)
+    public static function Connect($p_LocalHost, $p_Username, $p_Password, $p_Database)
     {
         if (self::$m_Connection === null)
         {
@@ -43,7 +43,7 @@ class Database
 
     /// Returns a prepared statement
     /// @p_Query : Query being prepared
-    public static function PrepareStatement(string $p_Query)
+    public static function PrepareStatement($p_Query)
     {
         try 
         {
@@ -65,7 +65,7 @@ class Database
 
     /// Directly execute to database
     /// @p_Query : Query being prepared
-    public static function DirectQuery(string $p_Query)
+    public static function DirectQuery($p_Query)
     {
         try 
         {

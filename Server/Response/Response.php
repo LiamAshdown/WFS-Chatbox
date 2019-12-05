@@ -1,78 +1,78 @@
 <?php
 
+require_once($_SERVER["DOCUMENT_ROOT"]."/lashdown/Server/Utility/StringHelper.php");
+
 class ResponseBuilder
 {
     /// Send Response
     static public function AccountAlreadyExists()
     {
         $l_ErrorMessage = array();
-        $l_ErrorMessage["error"] = 4;
+        $l_ErrorMessage["error"]         = LOGIN_ERROR_INCORRECT_ACCOUNT;
         $l_ErrorMessage["error_message"] = "Account Already Exists!";
 
         self::Response(200, false, false, "", $l_ErrorMessage, false);
     }
-
     /// Send Response
     static public function AccountCreated()
     {
         $l_ErrorMessage = array();
-        $l_ErrorMessage["error"] = 0;
+        $l_ErrorMessage["error"]         = LOGIN_ERROR_ACCOUNT_SUCCESS;
         $l_ErrorMessage["error_message"] = "Account Created!";
         
         self::Response(200, true, false, "", $l_ErrorMessage, false);
     }
-
     /// Send Response
     static public function IncorrectDetails()
     {
         $l_ErrorMessage = array();
-        $l_ErrorMessage["error"] = 1;
+        $l_ErrorMessage["error"]         = LOGIN_ERROR_INCORRECT_ACCOUNT;
         $l_ErrorMessage["error_message"] = "Incorrect username or password";
 
-        self::Response(200, true, false, "", $l_ErrorMessage, false);
+        self::Response(200, false, false, "", $l_ErrorMessage, false);
     }
-
     /// Send Response
     static public function LoggedIn()
     {
         $l_ErrorMessage = array();
-        $l_ErrorMessage["error"] = 0;
+        $l_ErrorMessage["error"]         =  LOGIN_ERROR_ACCOUNT_SUCCESS;
         $l_ErrorMessage["error_message"] = "Logged in successfully!";
 
         self::Response(200, true, false, "", $l_ErrorMessage, false);
     }
-
     /// Send Response
     /// @p_Data : Response Content
-    static public function ValidationError(array $p_Data)
+    static public function ValidationError($p_Data)
     {
         self::Response(200, false, false, "", $p_Data, false);
     }
-
     /// Send Response
     /// @p_Data : Response Content
-    static public function UserList(array $p_Data)
+    static public function UserList($p_Data)
     {
-        self::Response(200, true, true, "", $p_Data, false);
+        self::Response(200, true, false, "", $p_Data, false);
     }
-
     /// Send Response
     /// @p_Data : Response Content
-    static public function MessageList(array $p_Data)
+    static public function MessageList($p_Data)
     {
-        self::Response(200, true, true, "", $p_Data, false);
+        self::Response(200, true, false, "", $p_Data, false);
     }
-
     /// Send Response
-    static public function MessageSent()
+    /// @p_Type : Type of response
+    static public function MessageSent($p_Type)
     {
-        self::Response(200, true, false, "", array(), false);
+        self::Response(200, true, false, $p_Type, array(), false);
     }
-
+    /// Send Response
+    static public function ValidSession()
+    {
+        self::Response(200, false, false, VALIDATION_VALID, array(), false);
+    }
     /// Send Response
     static public function InvalidSession()
     {
-        self::Response(200, false, false, "INVALID_SESSION", array(), false);
+        self::Response(200, false, false, VALIDATION_INVALID, array(), false);
     }
 
     /// Create and send response
@@ -82,7 +82,7 @@ class ResponseBuilder
     /// @p_Data 		  : Array of data
     /// @p_Message 		  : Message
     /// @p_Assert		  : Stop PHP script executing
-    static private function Response(int $p_HTTPStatusCode, bool $p_Success, bool $p_Cache, string $p_Message, array $p_Data, bool $p_Assert)
+    static private function Response($p_HTTPStatusCode, $p_Success, $p_Cache, $p_Message, $p_Data, $p_Assert)
     {
         $l_Response = new Response($p_HTTPStatusCode, $p_Success, $p_Cache, $p_Data, $p_Message);
         $l_Response->Send();
@@ -105,7 +105,7 @@ class Response
     /// @p_Cache 		  : For the client to cache the response
     /// @p_Data 		  : Array of data
     /// @p_Message 		  : Array of data
-    public function __construct(int $p_HTTPStatusCode, bool $p_Success, bool $p_Cache, array $p_Data, string $p_Message) 
+    public function __construct($p_HTTPStatusCode, $p_Success, $p_Cache, $p_Data, $p_Message) 
     {
         $this->m_HTTPStatusCode = $p_HTTPStatusCode;
         $this->m_Success 		= $p_Success;

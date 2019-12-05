@@ -1,4 +1,4 @@
-
+<script src="js/messenger.js"></script>
 <div class="chat-box middle-of-screen">
     <!-- Message Box -->
     <div id="chatter">
@@ -16,7 +16,9 @@
 
     <!-- Input Box -->
     <form id="messenger-form" method="post">
-        <input type="text" id="send-message" name="SendMessage" placeholder="Enter message..." autofocus>
+        <input type="text" id="send-message" name="SendMessage" placeholder="Enter message...">
         <input type="submit" value="Send">
     </form>
 </div>
+
+<script src="js/messenger.js"></script>

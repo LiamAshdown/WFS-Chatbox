@@ -80,7 +80,7 @@
     width: 30%;
 
     overflow-x:hidden;
-    overflow-y:auto;
+    overflow-y:scroll;
 }
 
 #users ul, li {

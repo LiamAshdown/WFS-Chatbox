@@ -29,7 +29,7 @@ class PreparedStatement
     /// Bind Parameter to statement
     /// @p_Id    : Data Type
     /// @p_Value : Value
-    public function BindParameter(string $p_Id, string $p_Value)
+    public function BindParameter($p_Id, $p_Value)
     {
         try 
         {

@@ -18,7 +18,7 @@ class Configuration
 
     /// Load File
     /// @p_File : File being loaded
-    static public function LoadFile($p_File) : bool
+    static public function LoadFile($p_File)
     {
         if (file_exists($p_File))
         {

@@ -5,13 +5,6 @@ require_once("Database/Database.php");
 require_once("Configuration/Config.php");
 require_once("Utility/StringHelper.php");
 
-/// Since Messenger.php gets called every second, it's ideal to validate the session during this interval
-if (!UserBuilder::ValidateSession())
-{
-    ResponseBuilder::InvalidSession();
-    exit();
-}
-
 /// Get User list in chat room
 if (isset($_GET["GetUserList"]))
 {
@@ -35,8 +28,18 @@ else if (isset($_POST["SendMessage"]) && !empty($_POST["SendMessage"]))
 {
     $l_Message = $_POST["SendMessage"];
     UserBuilder::SendMessage($l_Message);
-
-    ResponseBuilder::MessageSent();
+}
+else if (isset($_GET["ValidateSession"]))
+{
+    /// Since Messenger.php gets called every second, it's ideal to validate the session during this interval
+    if (!UserBuilder::ValidateSession())
+    {
+        ResponseBuilder::InvalidSession();
+    }
+    else 
+    {
+        ResponseBuilder::ValidSession();
+    }
 }
 
 ?>

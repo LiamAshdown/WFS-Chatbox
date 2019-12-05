@@ -32,3 +32,5 @@
         <p>Not registered? <a href ="javascript:;" onclick="ShowElement('login-form', 'register-form')"><br>Create an account</a></p>
     </form>
 </div>
+
+<script src="js/login.js"></script>
