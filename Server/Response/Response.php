@@ -20,7 +20,7 @@ class ResponseBuilder
         $l_ErrorMessage["error"]         = LOGIN_ERROR_ACCOUNT_SUCCESS;
         $l_ErrorMessage["error_message"] = "Account Created!";
         
-        self::Response(200, true, false, "", $l_ErrorMessage, false);
+        self::Response(200, false, false, "", $l_ErrorMessage, false);
     }
     /// Send Response
     static public function IncorrectDetails()
@@ -67,7 +67,7 @@ class ResponseBuilder
     /// Send Response
     static public function ValidSession()
     {
-        self::Response(200, false, false, VALIDATION_VALID, array(), false);
+        self::Response(200, true, false, VALIDATION_VALID, array(), false);
     }
     /// Send Response
     static public function InvalidSession()

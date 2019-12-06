@@ -1,3 +1,9 @@
+var l_LoginForm    = document.getElementById("login-form");
+var l_RegisterForm = document.getElementById("register-form");
+var l_LoginAjax    = null;
+var l_RegisterAjax = null;
+
+
 /// Show and hide an element
 /// @p_Hide : Element to hide
 /// @p_Show : Element to show
@@ -17,201 +23,88 @@ function ShowElement(p_Hide, p_Show)
     }
 }
 
-/// Validate username
-/// @p_Username : Username being checked
-function ValidateUsername(p_Username)
+if (l_RegisterForm)
 {
-    var l_Requirement       = document.getElementById("requirement-username");
-    var l_SpecialCharacters = /[ !@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
-
-    if (p_Username != "" && p_Username.length < 3)
+    l_RegisterForm.addEventListener("submit", function(p_RegisterForm)
     {
-        l_Requirement.innerHTML = "Username must be longer than 3 characters!";
+        p_RegisterForm.preventDefault();
 
-        return false;
-    }
-    else if (p_Username.length > 30)
-    {
-        l_Requirement.innerHTML = "Username must not be larger than 30 characters!"
+        l_Elements = FindElements("text,password", l_RegisterForm);
 
-        return false;
-    }
-    else if (l_SpecialCharacters.test(p_Username))
-    {
-        l_Requirement.innerHTML = "Username must not contain any special characters!";
+        ChangeBoolElement("disabled", true, l_Elements);
 
-        return false;
-    }
-    else
-    {
-        l_Requirement.innerHTML = "";
-    }
+        l_RegisterAjax = new Ajax("Server/Login.php", "POST", "text", "json", GetURLDataFromForm(l_RegisterForm, "text,password"), function(p_Event) 
+        {
+            if (Ready(p_Event.target))
+            {
+                if (CheckHTTPStatus(p_Event.target))
+                {
+                    var l_Response = GetResponse(p_Event.target);
 
-    return true;
-}
-
-/// Validate password
-/// @p_Password : Password being checked
-function ValidatePassword(p_Password)
-{
-    var l_Requirement   = document.getElementById("requirement-password");
-    var l_Numbers       = /[0-9]/;
-
-    if (p_Password != "" && p_Password.length < 3)
-    {
-        l_Requirement.innerHTML = "Password must be longer than 3 characters!";
-
-        return false;
-    }
-    else if (p_Password.length > 30)
-    {
-        l_Requirement.innerHTML = "Password must not be larger than 30 characters!";
-
-        return false;
-    }
-    else if (!l_Numbers.test(p_Password))
-    {
-        l_Requirement.innerHTML = "Password must atleast contain 1 number!";
-
-        return false;
-    }
-    else
-    {
-        l_Requirement.innerHTML = "";
-    }
-
-    return true;
-}
-
-/// Validate confirm password
-/// @p_ConfirmPassword : Confirm Password being checked
-function ValidateConfirmPassword(p_ConfirmPassword)
-{
-    var l_Password    = document.getElementById("register-password");
-    var l_Requirement = document.getElementById("requirement-confirmpassword");
-    if (l_Password.value != p_ConfirmPassword)
-    {
-        l_Requirement.innerHTML = "Confirm password does not match password!";
-
-        return false;
-    }
-    else
-    {
-        l_Requirement.innerHTML = "";
-    }
-
-    return true;
-}
-
-/// Validate all input fields before sending post request
-function ValidateRegisterForm()
-{
-    var l_Username        = document.getElementById("register-username");
-    var l_Password        = document.getElementById("register-password");
-    var l_ConfirmPassword = document.getElementById("register-confirmpassword");
-
-    /// Prevent post request if any of the validations are invalid
-    if (!ValidateUsername(l_Username.value) || !ValidatePassword(l_Password.value) || !ValidateConfirmPassword(l_ConfirmPassword.value))
-    {
-        return false;
-    }
+                    if (!IsSuccess(l_Response))
+                    {
+                        switch(l_Response.data.error)
+                        {
+                            case 0: ///< Account created
+                                window.location.href = "index.php";
+                                break;
+                            case 1: ///< Username error
+                                document.getElementById("requirement-username").innerHTML = l_Response.data.error_message;
+                                break;
+                            case 2: ///< Password Error
+                                document.getElementById("requirement-password").innerHTML = l_Response.data.error_message;
+                                break;
+                            case 3: ///< Confirm Password Error
+                                document.getElementById("requirement-confirmpassword").innerHTML = l_Response.data.error_message;
+                                break;
+                            case 4: ///< Account already exists
+                                document.getElementById("requirement-username").innerHTML = l_Response.data.error_message;
+                                break;
+                        }
+                        
+                    }
+                }
+            }
+        });
     
-    return true;
+        l_RegisterAjax.Always(function () {
+            ChangeBoolElement("disabled", false, l_Elements);
+        });
+    });
 }
 
-/// Listener for Register form
-$("#register-form").submit(function(p_Event) {
-
-    p_Event.preventDefault();
-
-    /// Check if all inputs are valid before we send AJAX request
-    if (!ValidateRegisterForm())
+if (l_LoginForm)
+{
+    l_LoginForm.addEventListener("submit", function(p_LoginForm)
     {
-        return;
-    }
+        p_LoginForm.preventDefault();
 
-    /// Get our inputs
-    var $l_Inputs = $(this).find("input");
+        l_Elements = FindElements("text,password", l_LoginForm);
 
-    /// Serialize our inputs
-    var l_SerializeData = $(this).serialize();
+        ChangeBoolElement("disabled", "true", l_Elements);
 
-    /// Disable the form inputs
-    $l_Inputs.prop("disabled", true);
-
-    var l_Request = $.ajax({
-        url: "Server/Login.php",
-        type: "post",
-        dataType: 'json',
-        data:  l_SerializeData,
-        success: function(l_Json) {
-            switch(l_Json.data.error)
+        l_LoginAjax = new Ajax("Server/Login.php", "POST", "text", "json", GetURLDataFromForm(l_LoginForm, "text,password"), function(p_Event) 
+        {
+            if (Ready(p_Event.target))
             {
-                case 0: ///< Account created
-                    window.location.href = "index.php";
-                    break;
-                case 1: ///< Username error
-                    document.getElementById("requirement-username").innerHTML = l_Json.data.error_message;
-                    break;
-                case 2: ///< Password Error
-                    document.getElementById("requirement-password").innerHTML = l_Json.data.error_message;
-                    break;
-                case 3: ///< Confirm Password Error
-                    document.getElementById("requirement-confirmpassword").innerHTML = l_Json.data.error_message;
-                    break;
-                case 4: ///< Account already exists
-                    document.getElementById("requirement-username").innerHTML = l_Json.data.error_message;
-                    break;
+                if (CheckHTTPStatus(p_Event.target))
+                {
+                    var l_Response = GetResponse(p_Event.target);
+    
+                    if (IsSuccess(l_Response))
+                    {
+                        window.location.href = "index.php";     
+                    }
+                    else 
+                    {
+                        document.getElementById("requirement-login").innerHTML = l_Response.data.error_message;
+                    }
+                }
             }
-        },
-        error: function(data) {
-            /// TODO; Log something here?
-        }
+        });
+    
+        l_LoginAjax.Always(function () {
+            ChangeBoolElement("disabled", false, l_Elements);
+        });
     });
-
-    l_Request.always(function () {
-        // Reenable the inputs
-        $l_Inputs.prop("disabled", false);
-    });
-});
-
-/// Listener for Login form
-$("#login-form").submit(function(p_Event) {
-
-    p_Event.preventDefault();
-
-    /// Get our inputs
-    var $l_Inputs = $(this).find("input");
-
-    /// Serialize our inputs
-    var l_SerializeData = $(this).serialize();
-
-    /// Disable the form inputs
-    $l_Inputs.prop("disabled", true);
-
-    var l_Request = $.ajax({
-        url: "Server/Login.php",
-        type: "post",
-        dataType: 'json',
-        data:  l_SerializeData,
-        success: function(l_Json) {
-            switch(l_Json.data.error)
-            {
-                case 0: ///< successfully logged in
-                    window.location.href = "index.php";
-                    break;
-                case 1: ///< Incorrect account details
-                    document.getElementById("requirement-login").innerHTML = l_Json.data.error_message;
-                    break;
-            }
-        },
-        error: function(data) {
-            /// TODO; Log something here?
-        }
-    });
-
-    l_Request.always(function () {
-        // Reenable the inputs
-        $l_Inputs.prop("disabled", false);
-    });
-});
+}

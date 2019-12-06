@@ -24,9 +24,9 @@ else if (isset($_GET["GetMessages"]))
         ResponseBuilder::MessageList($l_MessageList);
     }
 }
-else if (isset($_POST["SendMessage"]) && !empty($_POST["SendMessage"]))
+else if (isset($_POST["send-message"]) && !empty($_POST["send-message"]))
 {
-    $l_Message = $_POST["SendMessage"];
+    $l_Message = $_POST["send-message"];
     UserBuilder::SendMessage($l_Message);
 }
 else if (isset($_GET["ValidateSession"]))

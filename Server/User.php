@@ -5,7 +5,7 @@ require_once("Database/Database.php");
 require_once("Configuration/Config.php");
 require_once("Response/Response.php");
 Configuration::LoadFile($_SERVER['DOCUMENT_ROOT']."/lashdown/Config.ini");
-Database::Connect(Configuration::GetEntry("DATABASE_HOST"), Configuration::GetEntry("DATABASE_USERNAME"), Configuration::GetEntry("DATABASE_PASSWORD"), Configuration::GetEntry("DATABASE_NAME"));
+Database::Connect(Configuration::GetEntry("DATABASE_HOST"), Configuration::GetEntry("DATABASE_USERNAME"), "", Configuration::GetEntry("DATABASE_NAME"));
 Session::BuildSession();
 
 class UserBuilder
@@ -22,7 +22,7 @@ class UserBuilder
     {
         /// Check if username exists in the database
         $l_PreparedStatement = Database::PrepareStatement("SELECT username FROM users WHERE username = ?");
-        $l_PreparedStatement->BindParameter("s", $p_Username);
+        $l_PreparedStatement->BindParameter("s", ucfirst(strtolower($p_Username)));
         $l_PreparedStatement->Execute();
 
         /// If we have an result - username exists in the database
@@ -40,7 +40,7 @@ class UserBuilder
      static public function CreateUser($p_Username, $p_Password)
     {
         $l_PreparedStatement = Database::PrepareStatement("INSERT INTO users(username, password, session_id, last_login, date_joined) VALUES (?, ?, ?, NOW(), NOW())");
-        $l_PreparedStatement->BindParameter("s", $p_Username);
+        $l_PreparedStatement->BindParameter("s", ucfirst($p_Username));
         $l_PreparedStatement->BindParameter("s", $p_Password);
         $l_PreparedStatement->BindParameter("s", Session::GetSessionId());
         $l_PreparedStatement->Execute();
@@ -55,7 +55,7 @@ class UserBuilder
     static public function TryLogin($p_Username,$p_Password)
     {
         $l_PreparedStatement = Database::PrepareStatement("SELECT id, username, session_id FROM users WHERE username = ? and password = ?");
-        $l_PreparedStatement->BindParameter("s", $p_Username);
+        $l_PreparedStatement->BindParameter("s", ucfirst(strtolower($p_Username)));
         $l_PreparedStatement->BindParameter("s", $p_Password);
         $l_PreparedStatement->Execute();
 
@@ -65,12 +65,12 @@ class UserBuilder
             $l_Row = $l_Result->GetRow();
 
             Session::SetValue("logged_in", "true");
-            Session::SetValue("user", new User($l_Row[0], ucfirst($l_Row[1]), $l_Row[2]));
+            Session::SetValue("user", new User($l_Row[0], $l_Row[1], $l_Row[2]));
 
             /// Also update the session
             $l_PreparedStatement = Database::PrepareStatement("UPDATE users SET session_id = ? WHERE username = ?");
             $l_PreparedStatement->BindParameter("s", Session::GetSessionId());
-            $l_PreparedStatement->BindParameter("s", $p_Username);
+            $l_PreparedStatement->BindParameter("s", ucfirst(strtolower($p_Username)));
             $l_PreparedStatement->Execute();
 
             return true;

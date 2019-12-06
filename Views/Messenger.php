@@ -16,7 +16,7 @@
 
     <!-- Input Box -->
     <form id="messenger-form" method="post">
-        <input type="text" id="send-message" name="SendMessage" placeholder="Enter message...">
+        <input type="text" id="send-message" placeholder="Enter message...">
         <input type="submit" value="Send">
     </form>
 </div>

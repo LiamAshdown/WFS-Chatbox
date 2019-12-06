@@ -1,13 +1,20 @@
 class Ajax
 {
-    constructor(p_Url, p_Method, p_DataType, p_Data, p_Function = null, p_Asynchronous = true)
+    /// @p_Url             : Url
+    /// @p_Method          : Method
+    /// @p_SendDataType    : Send Data Type
+    /// @p_RecieveDataType : Recieve Data Type
+    /// @p_Data            : Data
+    /// @p_Function        : Function
+    constructor(p_Url, p_Method, p_SendDataType, p_RecieveDataType, p_Data, p_Function = null, p_Asynchronous = true)
     {
-        this.Url           = p_Url;
-        this.Method        = p_Method;
-        this.DataType      = p_DataType;
-        this.Data          = p_Data;
-        this.Function      = p_Function;
-        this.Asynchronous  = p_Asynchronous;
+        this.Url             = p_Url;
+        this.Method          = p_Method;
+        this.SendDataType    = p_SendDataType;
+        this.RecieveDataType = p_RecieveDataType;
+        this.Data            = p_Data;
+        this.Function        = p_Function;
+        this.Asynchronous    = p_Asynchronous;
         
         this.ValidAjax     = true;
         this.XML           = new XMLHttpRequest();
@@ -15,13 +22,12 @@ class Ajax
 
         if (this.FormHeaderMethod())
         {
-            if (this.FormBody())
-            {
-                this.Send();
-            }
+            this.FormBody();
+            this.Send();
         }
     }
 
+    /// Set the header for the response
     FormHeaderMethod()
     {
         switch (this.Method)
@@ -34,7 +40,7 @@ class Ajax
             break;
             case "POST": ///< Content in Data
             {
-                if (this.DataType === "json")
+                if (this.SendDataType.toLowerCase() === "json")
                 {
                     this.RequestHeader[0] = "Content-Type";
                     this.RequestHeader[1] = "application/json; charset=utf-8";
@@ -59,239 +65,148 @@ class Ajax
         return true;
     }
     
+    /// Sort the data into required method
     FormBody()
     {
         if (this.Method === "POST")
         {
-            if (this.DataType === "json")
+            /// If the response is json, then convert the data into json response
+            if (this.SendDataType == "json")
             {
-                this.Data = JSON.stringify(this.Data);
-            }
-            else
-            {
-                var l_Data = "";
-
-                for (var l_Itr in this.Data)
-                {
-                    l_Data = l_Data + l_Itr + "=" + encodeURIComponent(l_Itr[l_Itr]) + '&';
-                }
-
-                l_Data = l_Data.substr(0, (l_Data.length - 1));
+                this.Data = this.ConvertToJson(this.Data);
             }
         }
-
-        return true;
+        else if (this.Method === "GET")
+        {
+            /// Encode the data - the reason why we do this is because
+            /// if the body contains special characters the browser
+            /// will think it's a request and not text
+            this.Data = encodeURI(this.Data);
+        }
     }
 
+    /// Send the data to the server
     Send()
     {
-        this.XML.open(this.Method, this.Url);
+        this.XML.open(this.Method, this.Url, this.Asynchronous);
 
+        /// Apply our request headers, since we are dealing with
+        /// Ajax we need to send our own header
         if (this.RequestHeader)
         {
             this.XML.setRequestHeader(this.RequestHeader[0], this.RequestHeader[1]);
         }
 
-        alert(this.Data);
-        this.XML.send(this.Data);
-
+        /// Call function if one is provided
         if (this.Function)
         {
-            this.XML.onreadystatechange = this.Function(this);
+            this.XML.onreadystatechange = this.Function;
         }
+
+        /// We don't need to send seperate send function for POST and GET,
+        /// as this function does the checking already
+        this.XML.send(this.Data);
     }
 
-    Ready()
+    ConvertToJson(p_Data)
     {
-        switch (this.XML.readyState)
+        var l_Json      = Array();
+        var l_Hashes    = p_Data.split('&');
+        
+        for (var l_I = 0; l_I < l_Hashes.length; l_I++)
         {
-            case XMLHttpRequest.DONE:
-            {
-                if (this.GetResponse() != null)
-                {
-                    return true;
-                }
-            }
-            break;
-            case XMLHttpRequest.HEADERS_RECEIVED:
-            case XMLHttpRequest.OPENED:
-            case XMLHttpRequest.UNSENT:
-                return false;
-            break;
-            default:
-                console.log("Ready: Recieved undefined HTTP Request");
-                return false;
-                break;
+            var l_Hash = l_Hashes[l_I].split('=');
+            l_Json[l_Hash[0]] = l_Hash[1];
         }
 
-        return false;
+        return l_Json;
     }
 
-    GetResponse()
+    /// Always call the function regardless if the status is successful or not
+    /// @p_Function : Function which will be executed
+    Always(p_Function)
     {
-        switch (this.DataType)
+        return p_Function();
+    }
+
+    /// Call the function is success is false
+    /// @p_Function : Function which will be executed
+    Fail(p_Function)
+    {
+        if (!IsSuccess(this.XML.response)) 
         {
-            case "json":
-            {
-                this.Data = JSON.parse(this.XML.data);
-            }
-            default:
-            {
-                this.Data = this.XML.data;
-            }
+            return p_Function();
         }
 
-        return this.Data;
+        return null;
+    }
+
+    /// Call the function if success is true
+    /// @p_Function : Function which will be executed
+    Success(p_Function)
+    {
+        if (IsSuccess(this.XML.response)) 
+        {
+            return p_Function();
+        }
+
+        return null;
     }
 }
 
-function Test(p_Ajax)
+/// Check whether the response is ready to be processed
+/// @p_Event : XMLHTTPRequest
+function Ready(p_Event)
 {
-    if (p_Ajax.Ready())
+    if (p_Event.readyState === XMLHttpRequest.DONE)
     {
-        alert("ready!");
+        return true;
     }
 }
 
-new Ajax("Server/Login.php", "POST", "text", "login-username=Quadral&login-password=dassdas", Test);
+/// Get Response content
+/// @p_Event : XMLHTTPRequest
+function GetResponse(p_Event)
+{
+    if (p_Event.getResponseHeader("Content-Type") === "application/json/charset=utf-8")
+    {
+        return JSON.parse(p_Event.response);
+    }
+    else
+    {
+        console.log("GetResponse: Recieved undefined Content-Type");
 
-(function() {
-    function ajax(option) {
-        function isEmpty(obj) {
-            for (var x in obj) {
-                if (obj.hasOwnProperty(x)) {
-                    return false;
-                }
-            }
-           return true;
-        }
-        var setting, method, url, data, xhr, success;
-        if (option) {
-            setting = option;
-        } else {
-            return console.error('not set arguments');
-        }
-        if (setting.method) {
-            method = setting.method;
-        } else {
-            return console.error('not set method');
-        }
-        if (setting.url) {
-            url = setting.url;
-        } else {
-            return console.error('not set url');
-        }
-        if (setting.success) {
-            success = setting.success;
-        } else {
-            return console.error('not set success callback');
-        }
-        data = setting.data || '';
-        if (setting.method === 'GET' && data && !isEmpty(data)) {
-            url = url + '?' + formUrlEncode(data);
-        }
+        return p_Event.response;
+    }
+}
 
-        function formUrlEncode(obj) {
-            if (!obj) {
-                return '';
-            }
-            var urlData = '';
-            for (var x in obj) {
-                alert(x);
-                urlData = urlData + x + '=' + encodeURIComponent(obj[x]) + '&';
-            }
-            urlData = urlData.substr(0, (urlData.length - 1));
-            return urlData;
+/// Check whether HTTP Status is valid
+/// @p_Event : XMLHTTPRequest
+function CheckHTTPStatus(p_Event)
+{
+    switch (p_Event.status)
+    {
+        case 409: ///< Conflict
+        case 406: /// Not Acceptable
+        case 200: ///< OK
+        {
+            return true;
         }
+        break;
+        default:
+            return false;
+        break;
+    }
+}
 
-        // handle IE8 IE9 CORS
-        if (typeof(XDomainRequest) !== 'undefined') {
-            var host = location.host,
-                matchUrl = url.replace('https://', '').replace('http://', '');
-                matchUrl = matchUrl.slice(0, matchUrl.indexOf('/'));
-            if (url.indexOf('//') === 0 || matchUrl !== host) {
-                var xdr = new XDomainRequest();
-                xdr.open(method, url);
-                xdr.onprogress = function () {
-                    // console.log('progress');
-                };
-                xdr.ontimeout = function () {
-                    // console.log('timeout');
-                };
-                xdr.onerror = function () {
-                    // console.log('error');
-                };
-                xdr.onload = function() {
-                    // console.log('onload');
-                    success(JSON.parse(xdr.responseText));
-                };
-                setTimeout(function () {
-                    xdr.send();
-                }, 0);
-
-                return;
-            }
-        }
-        // handle IE8 IE9 CORS end
-
-        xhr = new XMLHttpRequest();
-        xhr.open(method, url);
-        if (setting.setRequestHeader) {
-            for (var key in setting.setRequestHeader) {
-                xhr.setRequestHeader(key, setting.setRequestHeader[key]);
-            }
-        }
-        if (setting.withCredentials) {
-            xhr.withCredentials = true;
-        }
-        if (setting.method !== 'GET') {
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        }
-        alert(formUrlEncode(data));
-        xhr.send(formUrlEncode(data));
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    var response;
-                    switch (setting.response) {
-                        case 'json':
-                            response = JSON.parse(xhr.responseText);
-                            break;
-                        case 'xml':
-                            response = xhr.responseXML;
-                            break;
-                        default:
-                            response = JSON.parse(xhr.responseText);
-                            break;
-                    }
-                    success(response);
-                } else {
-                    if (setting.error) {
-                        setting.error(xhr.status, xhr.responseText);
-                    } else {
-                        return console.error('xhr.status', xhr.status);
-                    }
-                }
-            }
-        };
+/// Check whether the response is a successful response or not
+/// @p_Response : Response
+function IsSuccess(p_Response)
+{
+    if (p_Response.success == "true" || p_Response.success == "1")
+    {
+        return true;
     }
 
-    window.ajax = ajax;
-})();
-
-ajax({
-    method: 'POST',
-    url: 'Server/Login.php',
-    data: {
-        user: 'TED',
-        password: 'carbon12'
-    },
-    response: 'json',
-    success: function (data) {
-        console.log(data);
-    },
-    error: function(status, data) {
-        // status = http status
-        // do something
-    }
-});
+    return false;
+}

@@ -33,4 +33,5 @@
     </form>
 </div>
 
+<script src="js/validation.js"></script>
 <script src="js/login.js"></script>
