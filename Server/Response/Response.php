@@ -16,11 +16,7 @@ class ResponseBuilder
     /// Send Response
     static public function AccountCreated()
     {
-        $l_ErrorMessage = array();
-        $l_ErrorMessage["error"]         = LOGIN_ERROR_ACCOUNT_SUCCESS;
-        $l_ErrorMessage["error_message"] = "Account Created!";
-        
-        self::Response(200, false, false, "", $l_ErrorMessage, false);
+        self::Response(200, true, false, "", array(), false);
     }
     /// Send Response
     static public function IncorrectDetails()

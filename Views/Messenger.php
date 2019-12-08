@@ -1,4 +1,3 @@
-<script src="js/messenger.js"></script>
 <div class="chat-box middle-of-screen">
     <!-- Message Box -->
     <div id="chatter">

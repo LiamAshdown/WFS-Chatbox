@@ -1,110 +1,134 @@
-var l_LoginForm    = document.getElementById("login-form");
-var l_RegisterForm = document.getElementById("register-form");
 var l_LoginAjax    = null;
-var l_RegisterAjax = null;
-
 
 /// Show and hide an element
 /// @p_Hide : Element to hide
 /// @p_Show : Element to show
 function ShowElement(p_Hide, p_Show)
 {
-    document.getElementById(p_Hide).style.display = "none";
-    document.getElementById(p_Show).style.display = "block";
+    $(p_Hide).GetId().GetElement().style.display = "none";
+    $(p_Show).GetId().GetElement().style.display = "block";
 
     /// Register form has more fields - so increase the height size
     if (p_Show === "register-form")
     {
-        document.getElementById("login-box").style.height = "620px";
+        $("#login-box").GetId().GetElement().style.height = "620px";
     }
     else ///< login form
     {
-        document.getElementById("login-box").style.height = "500px";
+        $("login-box").GetId().GetElement().style.height = "500px";
     }
 }
 
-if (l_RegisterForm)
+/// Submit Listener
+/// @p_Event : Event of form
+/// @p_Form  : SteerForm class
+$("#login-form").Submit(function(p_Event, p_Form)
 {
-    l_RegisterForm.addEventListener("submit", function(p_RegisterForm)
+    /// If true, means we are already in the process of sending an AJAX request
+    if (l_LoginAjax)
     {
-        p_RegisterForm.preventDefault();
+        return;
+    }
 
-        l_Elements = FindElements("text,password", l_RegisterForm);
+    /// Disable login action
+    p_Event.preventDefault();
 
-        ChangeBoolElement("disabled", true, l_Elements);
+    /// Get the inputs
+    var l_Inputs = p_Form.Inputs("text, password");
 
-        l_RegisterAjax = new Ajax("Server/Login.php", "POST", "text", "json", GetURLDataFromForm(l_RegisterForm, "text,password"), function(p_Event) 
+    /// Set the inputs disabled
+    l_Inputs.SetAttribute("disabled", true);
+
+    l_LoginAjax = new Ajax("Server/Login.php", "POST", "text", "json", l_Inputs.GetValues(), function(p_Event) 
+    {
+        if (IsValidHTTPStatus(p_Event.target))
         {
-            if (Ready(p_Event.target))
+            var l_Response = GetResponse(p_Event.target);
+
+            if (IsSuccess(l_Response))
             {
-                if (CheckHTTPStatus(p_Event.target))
-                {
-                    var l_Response = GetResponse(p_Event.target);
+                /// Store username
+                sessionStorage.setItem("username", $("#login-username").GetId().GetElement().value);
 
-                    if (!IsSuccess(l_Response))
-                    {
-                        switch(l_Response.data.error)
-                        {
-                            case 0: ///< Account created
-                                window.location.href = "index.php";
-                                break;
-                            case 1: ///< Username error
-                                document.getElementById("requirement-username").innerHTML = l_Response.data.error_message;
-                                break;
-                            case 2: ///< Password Error
-                                document.getElementById("requirement-password").innerHTML = l_Response.data.error_message;
-                                break;
-                            case 3: ///< Confirm Password Error
-                                document.getElementById("requirement-confirmpassword").innerHTML = l_Response.data.error_message;
-                                break;
-                            case 4: ///< Account already exists
-                                document.getElementById("requirement-username").innerHTML = l_Response.data.error_message;
-                                break;
-                        }
-                        
-                    }
-                }
+                window.location.href = "index.php"; ///< Redirect to Messenger.php (chat box)   
             }
-        });
-    
-        l_RegisterAjax.Always(function () {
-            ChangeBoolElement("disabled", false, l_Elements);
-        });
+            else 
+            {
+                document.getElementById("requirement-login").innerHTML = l_Response.data.error_message;
+            }
+        }
     });
-}
 
-if (l_LoginForm)
+    /// Re-enable the inputs
+    l_LoginAjax.Always(function () {
+        l_Inputs.SetAttribute("disabled", false);
+    });
+});
+
+/// Submit Listener
+/// @p_Event : Event of form
+/// @p_Form  : SteerForm class
+$("#register-form").Submit(function(p_Event, p_Form)
 {
-    l_LoginForm.addEventListener("submit", function(p_LoginForm)
+    /// If true, means we are already in the process of sending an AJAX request
+    if (l_LoginAjax)
     {
-        p_LoginForm.preventDefault();
+        return;
+    }
 
-        l_Elements = FindElements("text,password", l_LoginForm);
+    /// Disable login action
+    p_Event.preventDefault();
 
-        ChangeBoolElement("disabled", "true", l_Elements);
+    /// Get the inputs
+    var l_Inputs = p_Form.Inputs("text, password");
 
-        l_LoginAjax = new Ajax("Server/Login.php", "POST", "text", "json", GetURLDataFromForm(l_LoginForm, "text,password"), function(p_Event) 
+    /// Set the inputs disabled
+    l_Inputs.SetAttribute("disabled", true);
+
+    l_LoginAjax = new Ajax("Server/Login.php", "POST", "text", "json", l_Inputs.GetValues(), function(p_Event) 
+    {
+        if (IsValidHTTPStatus(p_Event.target))
         {
-            if (Ready(p_Event.target))
+            var l_Response = GetResponse(p_Event.target);
+
+            if (IsSuccess(l_Response))
             {
-                if (CheckHTTPStatus(p_Event.target))
-                {
-                    var l_Response = GetResponse(p_Event.target);
-    
-                    if (IsSuccess(l_Response))
-                    {
-                        window.location.href = "index.php";     
-                    }
-                    else 
-                    {
-                        document.getElementById("requirement-login").innerHTML = l_Response.data.error_message;
-                    }
-                }
+                window.location.href = "index.php";
             }
-        });
-    
-        l_LoginAjax.Always(function () {
-            ChangeBoolElement("disabled", false, l_Elements);
-        });
+            else 
+            {
+                switch(l_Response.data.error)
+                {
+                    case 0: ///< Account created
+                    {
+                        /// Store username
+                        sessionStorage.setItem("username", $("#register-username").GetId().GetElement().value);
+
+                        window.location.href = "index.php";
+                    }
+                    break;
+                    case 1: ///< Username error
+                        $("#requirement-username").GetId().GetElement().innerHTML        = l_Response.data.error_message;
+                        break;
+                    case 2: ///< Password Error
+                        $("#requirement-password").GetId().GetElement().innerHTML        = l_Response.data.error_message;
+                        break;
+                    case 3: ///< Confirm Password Error
+                        $("#requirement-confirmpassword").GetId().GetElement().innerHTML = l_Response.data.error_message;
+                        break;
+                    case 4: ///< Account already exists
+                        $("#requirement-username").GetId().GetElement().innerHTML        = l_Response.data.error_message;
+                        break;
+                }    
+            } 
+        }
     });
-}
+
+    /// Re-enable the inputs
+    l_LoginAjax.Always(function () {
+        l_Inputs.SetAttribute("disabled", false);
+
+        /// Reenable form
+        l_LoginAjax = null;
+    });
+});

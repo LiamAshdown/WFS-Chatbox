@@ -4,7 +4,8 @@ require_once("User.php");
 require_once("Utility/StringHelper.php");
 
 /// Check if first variable is a register or login
-if (isset($_POST["register-username"]) && !empty($_POST["register-username"]))
+if ((isset($_POST["register-username"]) && !empty($_POST["register-username"])) && (isset($_POST["register-password"]) && !empty($_POST["register-password"]))
+&& (isset($_POST["register-confirmpassword"]) && !empty($_POST["register-confirmpassword"])))
 {
     $l_Username        = $_POST["register-username"];
     $l_Password        = $_POST["register-password"];
@@ -40,7 +41,7 @@ if (isset($_POST["register-username"]) && !empty($_POST["register-username"]))
         ResponseBuilder::AccountCreated();
     }
 }
-else if (isset($_POST["login-username"]) && !empty($_POST["login-username"]))
+else if ((isset($_POST["login-username"]) && !empty($_POST["login-username"])) && (isset($_POST["login-password"]) && !empty($_POST["login-password"])))
 {
     $l_Username = $_POST["login-username"];
     $l_Password = $_POST["login-password"];

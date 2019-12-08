@@ -2,8 +2,7 @@ class Ajax
 {
     /// @p_Url             : Url
     /// @p_Method          : Method
-    /// @p_SendDataType    : Send Data Type
-    /// @p_RecieveDataType : Recieve Data Type
+    /// @p_DataType        : Data Type
     /// @p_Data            : Data
     /// @p_Function        : Function
     constructor(p_Url, p_Method, p_SendDataType, p_RecieveDataType, p_Data, p_Function = null, p_Asynchronous = true)
@@ -16,9 +15,9 @@ class Ajax
         this.Function        = p_Function;
         this.Asynchronous    = p_Asynchronous;
         
-        this.ValidAjax     = true;
-        this.XML           = new XMLHttpRequest();
-        this.RequestHeader = Array();
+        this.ValidAjax       = true;
+        this.XML             = new XMLHttpRequest();
+        this.RequestHeader   = Array();
 
         if (this.FormHeaderMethod())
         {
@@ -40,6 +39,7 @@ class Ajax
             break;
             case "POST": ///< Content in Data
             {
+                /// Request Header (what the body will contain)
                 if (this.SendDataType.toLowerCase() === "json")
                 {
                     this.RequestHeader[0] = "Content-Type";
@@ -53,12 +53,11 @@ class Ajax
             }
             break;
             case "PATCH":
-                break;
+                break; ///< TODO
             default:
             {
                 console.error("Ajax: Cannot form method. Method type is invalid.");
                 return false;
-                break;
             }
         }
 
@@ -90,8 +89,7 @@ class Ajax
     {
         this.XML.open(this.Method, this.Url, this.Asynchronous);
 
-        /// Apply our request headers, since we are dealing with
-        /// Ajax we need to send our own header
+        /// Send our Request Headers (so server knows how to deal with the response)
         if (this.RequestHeader)
         {
             this.XML.setRequestHeader(this.RequestHeader[0], this.RequestHeader[1]);
@@ -100,18 +98,32 @@ class Ajax
         /// Call function if one is provided
         if (this.Function)
         {
-            this.XML.onreadystatechange = this.Function;
+            this.XML.onreadystatechange = function(p_Event) {
+
+                if (this.Ready())
+                {
+                    this.Function(p_Event);
+                }
+
+            }.bind(this);
         }
 
         /// We don't need to send seperate send function for POST and GET,
-        /// as this function does the checking already
+        /// as this function does the checking already inside
         this.XML.send(this.Data);
     }
 
+    /// Convert the data into JSON
     ConvertToJson(p_Data)
     {
-        var l_Json      = Array();
-        var l_Hashes    = p_Data.split('&');
+        /// Check if last character contains & if so remove it, as this will corrupt the json response
+        if (p_Data.charAt(p_Data.length - 1) == '&') /// last character is a null terminator which is why we subtract one
+        {
+            p_Data.substr(0, p_Data.length - 1);
+        }
+
+        var l_Json   = {};
+        var l_Hashes = p_Data.split('&');
         
         for (var l_I = 0; l_I < l_Hashes.length; l_I++)
         {
@@ -119,7 +131,16 @@ class Ajax
             l_Json[l_Hash[0]] = l_Hash[1];
         }
 
-        return l_Json;
+        return JSON.stringify(l_Json);
+    }
+
+    /// Check whether the response is ready to be processed
+    Ready()
+    {
+        if (this.XML.readyState === XMLHttpRequest.DONE)
+        {
+            return true;
+        }
     }
 
     /// Always call the function regardless if the status is successful or not
@@ -154,16 +175,6 @@ class Ajax
     }
 }
 
-/// Check whether the response is ready to be processed
-/// @p_Event : XMLHTTPRequest
-function Ready(p_Event)
-{
-    if (p_Event.readyState === XMLHttpRequest.DONE)
-    {
-        return true;
-    }
-}
-
 /// Get Response content
 /// @p_Event : XMLHTTPRequest
 function GetResponse(p_Event)
@@ -182,7 +193,7 @@ function GetResponse(p_Event)
 
 /// Check whether HTTP Status is valid
 /// @p_Event : XMLHTTPRequest
-function CheckHTTPStatus(p_Event)
+function IsValidHTTPStatus(p_Event)
 {
     switch (p_Event.status)
     {
@@ -197,6 +208,13 @@ function CheckHTTPStatus(p_Event)
             return false;
         break;
     }
+}
+
+/// Get Status code
+/// @p_Event : XMLHTTPRequest
+function GetStatusCode(p_Event)
+{
+    return p_Event.status;
 }
 
 /// Check whether the response is a successful response or not

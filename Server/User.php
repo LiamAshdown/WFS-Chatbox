@@ -5,7 +5,7 @@ require_once("Database/Database.php");
 require_once("Configuration/Config.php");
 require_once("Response/Response.php");
 Configuration::LoadFile($_SERVER['DOCUMENT_ROOT']."/lashdown/Config.ini");
-Database::Connect(Configuration::GetEntry("DATABASE_HOST"), Configuration::GetEntry("DATABASE_USERNAME"), "", Configuration::GetEntry("DATABASE_NAME"));
+Database::Connect(Configuration::GetEntry("DATABASE_HOST"), Configuration::GetEntry("DATABASE_USERNAME"), "carbon12", Configuration::GetEntry("DATABASE_NAME"));
 Session::BuildSession();
 
 class UserBuilder
@@ -144,7 +144,7 @@ class UserBuilder
     /// Get messages which are less than a day old
     static public function GetMessages()
     {
-        $l_PreparedStatement = Database::PrepareStatement("SELECT id, username, message, date_sent FROM messages WHERE date_sent > timestampadd(hour, -24, now())");
+        $l_PreparedStatement = Database::PrepareStatement("SELECT id, to_id, username, message, date_sent FROM messages WHERE date_sent > timestampadd(hour, -24, now())");
         $l_PreparedStatement->Execute();
 
         if ($l_Result = $l_PreparedStatement->GetResult())
@@ -155,11 +155,30 @@ class UserBuilder
             {
                 $l_Row = $l_Result->GetRow();
 
-                $l_Message             = array();
-                $l_Message["id"]       = $l_Row[0];
-                $l_Message["username"] = $l_Row[1];
-                $l_Message["message"]  = $l_Row[2];
-                $l_Message["date"]     = $l_Row[3];
+                $l_Message = array();
+
+                /// If there is data in to_id coloumn then check if user has the same Id for it
+                if ($l_Row[1] != 0)
+                {
+                    if (Session::GetValue("user")->GetId() == $l_Row[1])
+                    {
+                        $l_Message["id"]       = $l_Row[0];
+                        $l_Message["username"] = $l_Row[2];
+                        $l_Message["message"]  = $l_Row[3];
+                        $l_Message["date"]     = $l_Row[4];
+                    }
+                    else 
+                    {
+                        continue;
+                    }
+                }
+                else 
+                {
+                    $l_Message["id"]       = $l_Row[0];
+                    $l_Message["username"] = $l_Row[2];
+                    $l_Message["message"]  = $l_Row[3];
+                    $l_Message["date"]     = $l_Row[4];
+                }
 
                 $l_MessageList[] = $l_Message;
 
@@ -231,6 +250,19 @@ class UserBuilder
             self::Logout(false);
 
             ResponseBuilder::MessageSent(MESSAGE_ERROR_LOGOUT);
+
+            return true;
+        }
+        else if ($p_Message === "/help")
+        {
+            $l_PreparedStatement = Database::PrepareStatement("INSERT INTO messages(id, to_id, username, message, date_sent) VALUES(?, ?, ?, ?, NOW())");
+            $l_PreparedStatement->BindParameter("i", 0); ///< System Id
+            $l_PreparedStatement->BindParameter("i", Session::GetValue("user")->GetId());
+            $l_PreparedStatement->BindParameter("s", Session::GetValue("user")->GetUsername());
+            $l_PreparedStatement->BindParameter("s", "Available Commands:<br> -- /logout - Logs you out of chat.<br> -- /help - Gives you list of available commands you can use.");
+            $l_PreparedStatement->Execute();
+
+            ResponseBuilder::MessageSent(MESSAGE_ERROR_SUCCESS);
 
             return true;
         }

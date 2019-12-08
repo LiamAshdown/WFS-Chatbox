@@ -4,6 +4,7 @@ define('SITE_ROOT', dirname(__FILE__));
 /// Message Errors
 const MESSAGE_ERROR_SUCCESS             = 0;
 const MESSAGE_ERROR_LOGOUT              = 1;
+const MESSAGE_ERROR_HELP                = 2;
 
 /// Login Errors
 const LOGIN_ERROR_ACCOUNT_SUCCESS       = 0;
